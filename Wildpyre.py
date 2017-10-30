@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import misc
 import matplotlib.animation as animation
 
-#np.random.seed(42)
+#np.random.seed(42
 
 xmin = 0; xmax = 10; nx = 51; dx = 2/(nx - 1)
 ymin = 0; ymax = 10; ny = 51; dy = 2/(ny - 1)
