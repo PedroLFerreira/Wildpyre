@@ -39,14 +39,30 @@ Fu[0] = np.full((nx,ny), 1000) - np.random.uniform(0, 400, size=(nx, ny))
 
 for t in range(nt-1):
     print("   {:.4}%".format(t/nt*100),end='\r')
+    Te[t+1,1:-1,1:-1] = (Te[t,1:-1,1:-1] + dt*(planarDiffusivity*dx*(Te[t,2:,1:-1]*(1-W[t,1:-1,1:-1,0]-(H[2:,1:-1]-H[1:-1,1:-1])) - 2*Te[t,1:-1,1:-1] + Te[t,:-2,1:-1]*(1+W[t,1:-1,1:-1,0]-(H[:-2,1:-1]-H[1:-1,1:-1])))
+                                         + planarDiffusivity*dy*(Te[t,1:-1,2:]*(1-W[t,1:-1,1:-1,1]-(H[1:-1,2:]-H[1:-1,1:-1])) - 2*Te[t,1:-1,1:-1] + Te[t,1:-1,:-2]*(1+W[t,1:-1,1:-1,1]-(H[1:-1,:-2]-H[1:-1,1:-1])))
+                                         - atmosphericDiffusivity*Te[t,1:-1,1:-1]
+                                         + fireContribution*Fi[t,1:-1,1:-1]))
     for x in range(1,nx-1):
         for y in range(1,ny-1):
+            if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
+                # Fuel burns proportional to the amount that exists and delta T * burningRate
+                Fu[t+1,x,y] = Fu[t,x,y] - dt * Fu[t,x,y]*max(Te[t+1,x,y] - Tcrit, maximumBurning)* burningRate
+                Fu[t+1,x,y] = max(Fu[t+1,x,y], 0)
+                # Heat proportional to the mass of burnt fuel
+                Fi[t+1,x,y] = dt * Fu[t,x,y] * (Te[t+1,x,y] - Tcrit) * burningRate * heatContent    
+            else:
+                Fu[t+1,x,y] = Fu[t,x,y]
+                Fi[t+1,x,y] = Fi[t,x,y]
+
+    #for x in range(1,nx-1):
+    #    for y in range(1,ny-1):
 
             # Diffuse temperature through the plane and to the atmosphere and add the fire heat contribution
-            Te[t+1,x,y] = (Te[t,x,y] + dt*(planarDiffusivity*dx*(Te[t,x+1,y]*(1-W[t,x,y,0]-(H[x+1,y]-H[x,y])) - 2*Te[t,x,y] + Te[t,x-1,y]*(1+W[t,x,y,0]-(H[x-1,y]-H[x,y])))
-                                         + planarDiffusivity*dy*(Te[t,x,y+1]*(1-W[t,x,y,1]-(H[x,y+1]-H[x,y])) - 2*Te[t,x,y] + Te[t,x,y-1]*(1+W[t,x,y,1]-(H[x,y-1]-H[x,y])))
-                                         - atmosphericDiffusivity*Te[t,x,y]
-                                         + fireContribution*Fi[t,x,y]))
+            #Te[t+1,x,y] = (Te[t,x,y] + dt*(planarDiffusivity*dx*(Te[t,x+1,y]*(1-W[t,x,y,0]-(H[x+1,y]-H[x,y])) - 2*Te[t,x,y] + Te[t,x-1,y]*(1+W[t,x,y,0]-(H[x-1,y]-H[x,y])))
+            #                             + planarDiffusivity*dy*(Te[t,x,y+1]*(1-W[t,x,y,1]-(H[x,y+1]-H[x,y])) - 2*Te[t,x,y] + Te[t,x,y-1]*(1+W[t,x,y,1]-(H[x,y-1]-H[x,y])))
+            #                             - atmosphericDiffusivity*Te[t,x,y]
+            #                             + fireContribution*Fi[t,x,y]))
 
             if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
                 # Fuel burns proportional to the amount that exists and delta T * burningRate
