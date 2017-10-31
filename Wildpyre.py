@@ -4,6 +4,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt 
 from scipy import misc
 import matplotlib.animation as animation
+import time
 
 #np.random.seed(42)
 
@@ -36,6 +37,8 @@ W[:,:,:,1] = .5                  # Wind in positive-y direction
 H = np.array([[2*np.sin(i/10+j/5)+5-np.random.uniform(0,1) for i in range(nx)] for j in range(ny)])
 
 Fu[0] = np.full((nx,ny), 1000) - np.random.uniform(0, 400, size=(nx, ny))
+
+begin = time.time()
 
 for t in range(nt-1):
     print("   {:.4}%".format(t/nt*100),end='\r')
@@ -75,6 +78,7 @@ for t in range(nt-1):
                 Fi[t+1,x,y] = Fi[t,x,y]
 
 
+print('took {}s'.format(time.time() - begin))
 
 #plt.ion()
 fig = plt.figure(figsize=(20, 4))
