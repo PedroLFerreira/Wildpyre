@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import misc
 import matplotlib.animation as animation
 
-#np.random.seed(42
+np.random.seed(42)
 
 xmin = 0; xmax = 10; nx = 51; dx = 2/(nx - 1)
 ymin = 0; ymax = 10; ny = 51; dy = 2/(ny - 1)
@@ -15,7 +15,7 @@ X, Y = np.meshgrid(np.linspace(xmin, xmax, nx), np.linspace(ymin, ymax, ny))
 Te = np.zeros((nt, nx, ny))         #Temperature
 Fi = np.zeros((nt, nx, ny))         #Fire
 Fu = np.zeros((nt, nx, ny))         #Fuel Mass
-W = np.ones((nt, nx, ny, 2))          #Wind
+W = np.ones((nt, nx, ny, 2))        #Wind
 #G = np.zeros((nt, nx, ny))         #Ground Types
 #H = np.zeros((nt, nx, ny))         #Height
 
@@ -58,8 +58,6 @@ for t in range(nt-1):
                 Fu[t+1,x,y] = Fu[t,x,y]
                 Fi[t+1,x,y] = Fi[t,x,y]
 
-
-
 #plt.ion()
 fig = plt.figure(figsize=(20, 4))
 ax1 = fig.add_subplot(131)
@@ -73,6 +71,8 @@ plt.clim(0, 1500)
 
 ax2 = fig.add_subplot(132)
 ax2.set_title('Heat')
+plt.xlabel('y')
+plt.ylabel('x')
 FiImg = plt.imshow(Fi[0], cmap='inferno', origin='lower')
 plt.colorbar(FiImg)
 plt.clim(0, 500)
@@ -80,6 +80,8 @@ fig.show()
 
 ax2 = fig.add_subplot(133)
 ax2.set_title('Fuel')
+plt.xlabel('y')
+plt.ylabel('x')
 FuImg = plt.imshow(Fu[0], cmap='copper', origin='lower')
 plt.colorbar(FuImg)
 plt.clim(0, 1000)
