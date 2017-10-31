@@ -111,7 +111,7 @@ plt.colorbar(FiImg)
 plt.clim(0, 500)
 fig.show()
 
-ax2 = fig.add_subplot(133)
+ax2 = fig.add_subplot(143)
 ax2.set_title('Fuel')
 plt.xlabel('y')
 plt.ylabel('x')
