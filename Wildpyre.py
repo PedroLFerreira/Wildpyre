@@ -46,17 +46,27 @@ for t in range(nt-1):
                                          + planarDiffusivity*dy*(Te[t,1:-1,2:]*(1-W[t,1:-1,1:-1,1]-(H[1:-1,2:]-H[1:-1,1:-1])) - 2*Te[t,1:-1,1:-1] + Te[t,1:-1,:-2]*(1+W[t,1:-1,1:-1,1]-(H[1:-1,:-2]-H[1:-1,1:-1])))
                                          - atmosphericDiffusivity*Te[t,1:-1,1:-1]
                                          + fireContribution*Fi[t,1:-1,1:-1]))
-    for x in range(1,nx-1):
-        for y in range(1,ny-1):
-            if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
-                # Fuel burns proportional to the amount that exists and delta T * burningRate
-                Fu[t+1,x,y] = Fu[t,x,y] - dt * Fu[t,x,y]*max(Te[t+1,x,y] - Tcrit, maximumBurning)* burningRate
-                Fu[t+1,x,y] = max(Fu[t+1,x,y], 0)
+    
+    Hot = Te[t+1] > Tcrit
+    Fu[t+1] = Fu[t]
+
+    Fu[t+1][Hot] -= dt * Fu[t][Hot]* np.maximum(Te[t+1][Hot] - Tcrit, maximumBurning) * burningRate
+    Fu[t+1][Hot] = np.maximum(Fu[t+1][Hot], 0)
+
+    Fi[t+1][Hot] = dt * Fu[t][Hot] * (Te[t+1][Hot] - Tcrit) * burningRate * heatContent
+    Fi[t+1][np.logical_not(Hot)] = Fi[t][np.logical_not(Hot)]
+
+    #for x in range(1,nx-1):
+    #    for y in range(1,ny-1):
+    #        if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
+    #            # Fuel burns proportional to the amount that exists and delta T * burningRate
+    #            Fu[t+1,x,y] = Fu[t,x,y] - dt * Fu[t,x,y]*max(Te[t+1,x,y] - Tcrit, maximumBurning)* burningRate
+    #            Fu[t+1,x,y] = max(Fu[t+1,x,y], 0)
                 # Heat proportional to the mass of burnt fuel
-                Fi[t+1,x,y] = dt * Fu[t,x,y] * (Te[t+1,x,y] - Tcrit) * burningRate * heatContent    
-            else:
-                Fu[t+1,x,y] = Fu[t,x,y]
-                Fi[t+1,x,y] = Fi[t,x,y]
+    #            Fi[t+1,x,y] = dt * Fu[t,x,y] * (Te[t+1,x,y] - Tcrit) * burningRate * heatContent    
+    #        else:
+    #            Fu[t+1,x,y] = Fu[t,x,y]
+    #            Fi[t+1,x,y] = Fi[t,x,y]
 
     #for x in range(1,nx-1):
     #    for y in range(1,ny-1):
@@ -67,15 +77,15 @@ for t in range(nt-1):
             #                             - atmosphericDiffusivity*Te[t,x,y]
             #                             + fireContribution*Fi[t,x,y]))
 
-            if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
-                # Fuel burns proportional to the amount that exists and delta T * burningRate
-                Fu[t+1,x,y] = Fu[t,x,y] - dt * Fu[t,x,y]*max(Te[t+1,x,y] - Tcrit, maximumBurning)* burningRate
-                Fu[t+1,x,y] = max(Fu[t+1,x,y], 0)
+            #if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
+            #    # Fuel burns proportional to the amount that exists and delta T * burningRate
+            #    Fu[t+1,x,y] = Fu[t,x,y] - dt * Fu[t,x,y]*max(Te[t+1,x,y] - Tcrit, maximumBurning)* burningRate
+            #    Fu[t+1,x,y] = max(Fu[t+1,x,y], 0)
                 # Heat proportional to the mass of burnt fuel
-                Fi[t+1,x,y] = dt * Fu[t,x,y] * (Te[t+1,x,y] - Tcrit) * burningRate * heatContent    
-            else:
-                Fu[t+1,x,y] = Fu[t,x,y]
-                Fi[t+1,x,y] = Fi[t,x,y]
+            #    Fi[t+1,x,y] = dt * Fu[t,x,y] * (Te[t+1,x,y] - Tcrit) * burningRate * heatContent    
+            #else:
+            #    Fu[t+1,x,y] = Fu[t,x,y]
+            #    Fi[t+1,x,y] = Fi[t,x,y]
 
 
 print('took {}s'.format(time.time() - begin))
