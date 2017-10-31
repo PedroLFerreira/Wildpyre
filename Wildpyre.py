@@ -8,9 +8,9 @@ import time
 
 np.random.seed(42)
 
-xmin = 0; xmax = 10; nx = 51; dx = 2/(nx - 1)
-ymin = 0; ymax = 10; ny = 51; dy = 2/(ny - 1)
-nt = 200; dt = .1
+xmin = 0; xmax = 10; nx = 201; dx = 2/(nx - 1)
+ymin = 0; ymax = 10; ny = 201; dy = 2/(ny - 1)
+nt = 1000; dt = .1
 
 X, Y = np.meshgrid(np.linspace(xmin, xmax, nx), np.linspace(ymin, ymax, ny))
 Te = np.zeros((nt, nx, ny))         #Temperature
@@ -20,19 +20,19 @@ W = np.ones((nt, nx, ny, 2))        #Wind
 #G = np.zeros((nt, nx, ny))         #Ground Types
 
 
-Tcrit = 100                     # Temperature at which fuel ignites
+Tcrit = 500                     # Temperature at which fuel ignites
 burningRate = 0.005             # How fast fuel burns
-heatContent = 2                 # How much heat the fuel generates
-planarDiffusivity = 20          # How fast T diffuses to the surrounding terrain
+heatContent = 3                 # How much heat the fuel generates
+planarDiffusivity = 50          # How fast T diffuses to the surrounding terrain
 atmosphericDiffusivity = 1      # How fast T diffuses to the atmosphere
-fireContribution = 10           # How much T increases due to the fire
+fireContribution = 20           # How much T increases due to the fire
 slopeContribution = 1           # How much the terrain slope influences T planar diffusion
 maximumBurning = 100
 
-Te[0,int(nx/2):int(nx/2+4),int(ny/2):int(ny/2+2)] = 650
+Te[0,int(nx/2):int(nx/2+4),int(ny/2):int(ny/2+40)] = 650
 
-W[:,:,:,0] = -0.1                  # Wind in positive-x direction
-W[:,:,:,1] =  0.1                  # Wind in positive-y direction
+W[:,:,:,0] = 0                  # Wind in positive-x direction
+W[:,:,:,1] = 0                  # Wind in positive-y direction
 H = np.array([[0.1*np.sin(i/10+j/5)+.5-np.random.uniform(0,.1) for i in range(nx)] for j in range(ny)])
 
 Fu[0] = np.full((nx,ny), 1000) - np.random.uniform(0, 600, size=(nx, ny))
@@ -90,8 +90,8 @@ for t in range(nt-1):
 print('took {}s'.format(time.time() - begin))
 
 #plt.ion()
-fig = plt.figure(figsize=(35, 10))
-ax1 = fig.add_subplot(141)
+fig = plt.figure(figsize=(10, 10))
+ax1 = fig.add_subplot(221)
 ax1.set_title('Temperature')
 plt.xlabel('x')
 plt.ylabel('y')
@@ -100,7 +100,7 @@ plt.colorbar(TeImg)
 ax1.set_autoscale_on(True)
 plt.clim(0, 1500)
 
-ax2 = fig.add_subplot(142)
+ax2 = fig.add_subplot(222)
 plt.xlabel('x')
 plt.ylabel('y')
 ax2.set_title('Heat')
@@ -111,7 +111,7 @@ plt.colorbar(FiImg)
 plt.clim(0, 500)
 fig.show()
 
-ax2 = fig.add_subplot(143)
+ax2 = fig.add_subplot(223)
 ax2.set_title('Fuel')
 plt.xlabel('y')
 plt.ylabel('x')
@@ -120,7 +120,7 @@ plt.colorbar(FuImg)
 plt.clim(0, 1000)
 fig.show()
 
-ax4 = fig.add_subplot(144)
+ax4 = fig.add_subplot(224)
 plt.xlabel('x')
 plt.ylabel('y')
 ax4.set_title('Altitude')
