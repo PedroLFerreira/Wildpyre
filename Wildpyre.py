@@ -31,11 +31,11 @@ maximumBurning = 100
 
 Te[0,int(nx/2):int(nx/2+4),int(ny/2):int(ny/2+2)] = 650
 
-W[:,:,:,0] = 0                  # Wind in positive-x direction
-W[:,:,:,1] = .5                  # Wind in positive-y direction
-H = np.array([[2*np.sin(i/10+j/5)+5-np.random.uniform(0,1) for i in range(nx)] for j in range(ny)])
+W[:,:,:,0] = -0.1                  # Wind in positive-x direction
+W[:,:,:,1] =  0.1                  # Wind in positive-y direction
+H = np.array([[0.1*np.sin(i/10+j/5)+.5-np.random.uniform(0,.1) for i in range(nx)] for j in range(ny)])
 
-Fu[0] = np.full((nx,ny), 1000) - np.random.uniform(0, 400, size=(nx, ny))
+Fu[0] = np.full((nx,ny), 1000) - np.random.uniform(0, 600, size=(nx, ny))
 
 begin = time.time()
 
@@ -90,7 +90,7 @@ for t in range(nt-1):
 print('took {}s'.format(time.time() - begin))
 
 #plt.ion()
-fig = plt.figure(figsize=(20, 4))
+fig = plt.figure(figsize=(35, 10))
 ax1 = fig.add_subplot(141)
 ax1.set_title('Temperature')
 plt.xlabel('x')
@@ -126,7 +126,7 @@ plt.ylabel('y')
 ax4.set_title('Altitude')
 AlImg = plt.imshow(H.T, cmap='viridis', origin='lower')
 plt.colorbar(AlImg)
-plt.clim(0, 10)
+plt.clim(0, 1)
 fig.show()
 
 for t in range(0,nt,2):
