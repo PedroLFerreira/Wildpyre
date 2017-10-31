@@ -6,11 +6,7 @@ from scipy import misc
 import matplotlib.animation as animation
 import time
 
-<<<<<<< HEAD
 np.random.seed(42)
-=======
-#np.random.seed(42)
->>>>>>> ac22f8ec081123419250dda08524742798acea61
 
 xmin = 0; xmax = 10; nx = 51; dx = 2/(nx - 1)
 ymin = 0; ymax = 10; ny = 51; dy = 2/(ny - 1)
@@ -21,10 +17,6 @@ Te = np.zeros((nt, nx, ny))         #Temperature
 Fi = np.zeros((nt, nx, ny))         #Fire
 Fu = np.zeros((nt, nx, ny))         #Fuel Mass
 W = np.ones((nt, nx, ny, 2))        #Wind
-<<<<<<< HEAD
-=======
-H = np.zeros((nx, ny))              #Height
->>>>>>> ac22f8ec081123419250dda08524742798acea61
 #G = np.zeros((nt, nx, ny))         #Ground Types
 
 
@@ -95,15 +87,8 @@ for t in range(nt-1):
             #    Fi[t+1,x,y] = Fi[t,x,y]
 
 
-<<<<<<< HEAD
 print('took {}s'.format(time.time() - begin))
-=======
-<<<<<<< HEAD
-=======
-print('took {}s'.format(time.time()-begin))
->>>>>>> 5da878dcd1ff34eda06e0e19ca866bf751b1e0cc
 
->>>>>>> ac22f8ec081123419250dda08524742798acea61
 #plt.ion()
 fig = plt.figure(figsize=(20, 4))
 ax1 = fig.add_subplot(141)
@@ -119,30 +104,18 @@ ax2 = fig.add_subplot(142)
 plt.xlabel('x')
 plt.ylabel('y')
 ax2.set_title('Heat')
-<<<<<<< HEAD
 plt.xlabel('y')
 plt.ylabel('x')
-FiImg = plt.imshow(Fi[0], cmap='inferno', origin='lower')
-=======
 FiImg = plt.imshow(Fi[0].T, cmap='inferno', origin='lower')
->>>>>>> ac22f8ec081123419250dda08524742798acea61
 plt.colorbar(FiImg)
 plt.clim(0, 500)
 fig.show()
 
-<<<<<<< HEAD
 ax2 = fig.add_subplot(133)
 ax2.set_title('Fuel')
 plt.xlabel('y')
 plt.ylabel('x')
-FuImg = plt.imshow(Fu[0], cmap='copper', origin='lower')
-=======
-ax3 = fig.add_subplot(143)
-plt.xlabel('x')
-plt.ylabel('y')
-ax3.set_title('Fuel')
 FuImg = plt.imshow(Fu[0].T, cmap='copper', origin='lower')
->>>>>>> ac22f8ec081123419250dda08524742798acea61
 plt.colorbar(FuImg)
 plt.clim(0, 1000)
 fig.show()
