@@ -1,15 +1,17 @@
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
+#matplotlib.use("wx")
 import matplotlib.pyplot as plt 
 from scipy import misc
 import matplotlib.animation as animation
 import time
+from pylab import *
 
 np.random.seed(42)
 
-xmin = 0; xmax = 10; nx = 201; dx = 2/(nx - 1)
-ymin = 0; ymax = 10; ny = 201; dy = 2/(ny - 1)
+xmin = 0; xmax = 10; nx = 101; dx = 2/(nx - 1)
+ymin = 0; ymax = 10; ny = 101; dy = 2/(ny - 1)
 nt = 1000; dt = .1
 
 X, Y = np.meshgrid(np.linspace(xmin, xmax, nx), np.linspace(ymin, ymax, ny))
@@ -57,18 +59,6 @@ for t in range(nt-1):
 
     #for x in range(1,nx-1):
     #    for y in range(1,ny-1):
-    #        if Te[t+1,x,y] > Tcrit: # Cell will ignite or continue burning
-    #            # Fuel burns proportional to the amount that exists and delta T * burningRate
-    #            Fu[t+1,x,y] = Fu[t,x,y] - dt * Fu[t,x,y]*max(Te[t+1,x,y] - Tcrit, maximumBurning)* burningRate
-    #            Fu[t+1,x,y] = max(Fu[t+1,x,y], 0)
-                # Heat proportional to the mass of burnt fuel
-    #            Fi[t+1,x,y] = dt * Fu[t,x,y] * (Te[t+1,x,y] - Tcrit) * burningRate * heatContent    
-    #        else:
-    #            Fu[t+1,x,y] = Fu[t,x,y]
-    #            Fi[t+1,x,y] = Fi[t,x,y]
-
-    #for x in range(1,nx-1):
-    #    for y in range(1,ny-1):
 
             # Diffuse temperature through the plane and to the atmosphere and add the fire heat contribution
             #Te[t+1,x,y] = (Te[t,x,y] + dt*(planarDiffusivity*dx*(Te[t,x+1,y]*(1-W[t,x,y,0]-(H[x+1,y]-H[x,y])) - 2*Te[t,x,y] + Te[t,x-1,y]*(1+W[t,x,y,0]-(H[x-1,y]-H[x,y])))
@@ -91,6 +81,9 @@ print('took {}s'.format(time.time() - begin))
 
 #plt.ion()
 fig = plt.figure(figsize=(10, 10))
+get_current_fig_manager().window.wm_geometry("+0+0")
+
+
 ax1 = fig.add_subplot(221)
 ax1.set_title('Temperature')
 plt.xlabel('x')
@@ -135,4 +128,4 @@ for t in range(0,nt,2):
     FiImg.set_data(Fi[t].T)
     FuImg.set_data(Fu[t].T)
     fig.canvas.draw()
-    #plt.pause(1e-17)
+    plt.pause(1e-17)
