@@ -1,6 +1,7 @@
 import numpy as np
 import time
-
+import matplotlib.pyplot as plt
+from pylab import *
 
 class Simulator:
     def __init__ (self, nx, ny, nt, dt=0.1, T=None,
@@ -64,4 +65,52 @@ class Simulator:
         print('Simulation took {} seconds.'.format(time.time() - begin))
 
     def Show(self):
-        pass
+        #plt.ion()
+        fig = plt.figure(figsize=(12, 12))
+        get_current_fig_manager().window.wm_geometry("+0+0")
+
+        ax1 = fig.add_subplot(221)
+        ax1.set_title('Temperature')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        TeImg = plt.imshow(self.T[0].T, cmap='viridis', origin='lower')
+        plt.colorbar(TeImg)
+        ax1.set_autoscale_on(True)
+        plt.clim(0, 500)
+
+        ax2 = fig.add_subplot(222)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        ax2.set_title('Heat')
+        plt.xlabel('y')
+        plt.ylabel('x')
+        HeImg = plt.imshow(self.H[0].T, cmap='inferno', origin='lower')
+        plt.colorbar(HeImg)
+        plt.clim(0, 500)
+        fig.show()
+
+        ax2 = fig.add_subplot(223)
+        ax2.set_title('Fuel')
+        plt.xlabel('y')
+        plt.ylabel('x')
+        FuImg = plt.imshow(self.F[0].T, cmap='copper', origin='lower')
+        plt.colorbar(FuImg)
+        plt.clim(0, 1000)
+        fig.show()
+
+        ax4 = fig.add_subplot(224)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        ax4.set_title('Altitude')
+        AlImg = plt.imshow(self.A.T, cmap='viridis', origin='lower')
+        plt.colorbar(AlImg)
+        fig.show()
+
+        for t in range(0,self.nt,2):
+            print(t,end='\r')
+            TeImg.set_data(self.T[t].T)
+            HeImg.set_data(self.H[t].T)
+            FuImg.set_data(self.F[t].T)
+            fig.tight_layout
+            fig.canvas.draw()
+            plt.pause(1e-20)
