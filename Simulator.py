@@ -1,8 +1,9 @@
 import numpy as np
 import time
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from pylab import *
-
 class Simulator:
     def __init__ (self, nx, ny, nt, dt=0.1, T=None,
                                             F=None,
@@ -50,8 +51,8 @@ class Simulator:
         begin = time.time()
         for t in range(self.nt-1):
             print("   {:.4}%".format(t/self.nt*100),end='\r') # Print progress to console
-            self.T[t+1,1:-1,1:-1] = (self.T[t,1:-1,1:-1] + self.dt*(self.planarDiffusivity*(self.T[t,2:,1:-1]*(1-self.W[t,1:-1,1:-1,0]-(self.A[2:,1:-1]-self.A[1:-1,1:-1])) - 2*self.T[t,1:-1,1:-1] + self.T[t,:-2,1:-1]*(1+self.W[t,1:-1,1:-1,0]-(self.A[:-2,1:-1]-self.A[1:-1,1:-1]))) 
-                                                                  + self.planarDiffusivity*(self.T[t,1:-1,2:]*(1-self.W[t,1:-1,1:-1,1]-(self.A[1:-1,2:]-self.A[1:-1,1:-1])) - 2*self.T[t,1:-1,1:-1] + self.T[t,1:-1,:-2]*(1+self.W[t,1:-1,1:-1,1]-(self.A[1:-1,:-2]-self.A[1:-1,1:-1])))
+            self.T[t+1,1:-1,1:-1] = (self.T[t,1:-1,1:-1] + self.dt*(self.planarDiffusivity*(self.T[t,2:,1:-1]*(1-self.W[t,1:-1,1:-1,0]-self.slopeContribution*(self.A[2:,1:-1]-self.A[1:-1,1:-1])) - 2*self.T[t,1:-1,1:-1] + self.T[t,:-2,1:-1]*(1+self.W[t,1:-1,1:-1,0]-self.slopeContribution*(self.A[:-2,1:-1]-self.A[1:-1,1:-1]))) 
+                                                                  + self.planarDiffusivity*(self.T[t,1:-1,2:]*(1-self.W[t,1:-1,1:-1,1]-self.slopeContribution*(self.A[1:-1,2:]-self.A[1:-1,1:-1])) - 2*self.T[t,1:-1,1:-1] + self.T[t,1:-1,:-2]*(1+self.W[t,1:-1,1:-1,1]-self.slopeContribution*(self.A[1:-1,:-2]-self.A[1:-1,1:-1])))
                                                                   - self.atmosphericDiffusivity*self.T[t,1:-1,1:-1] 
                                                                   + self.H[t,1:-1,1:-1])) # Heavily modified heat equation solved here
             Hot = self.T[t+1] > self.Tcrit       # Check where T is above Tcrit and store it in the boolean vector Hot
