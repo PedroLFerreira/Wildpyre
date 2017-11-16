@@ -67,10 +67,10 @@ class Simulator:
         Hot = self.T > self.Tcrit       # Check where T is above Tcrit and store it in the boolean vector Hot
         newF[:,:] = self.F              # Copy the last F field state
 
-        newF[Hot] -= self.dt * self.F[Hot] * self.burningRate * (self.T[Hot] - self.Tcrit)/(self.T[Hot] + self.Tcrit)     # Burn F if Hot
+        newF[Hot] -= self.dt * self.F[Hot] * self.burningRate * (self.T[Hot] - self.Tcrit) / self.T[Hot]     # Burn F if Hot
         newF[Hot] = np.maximum(newF[Hot], 0)      # Make sure F is always non-negative
 
-        newH[Hot] = self.dt * self.F[Hot] * self.burningRate * self.heatContent * (self.T[Hot] - self.Tcrit)/(self.T[Hot] + self.Tcrit) # Increase value in the H field if Hot
+        newH[Hot] = self.dt * self.F[Hot] * self.burningRate * self.heatContent * (self.T[Hot] - self.Tcrit) / self.T[Hot] # Increase value in the H field if Hot
         newH[np.logical_not(Hot)] = self.H[np.logical_not(Hot)]   # Carry on if not Hot
 
         self.oldT[:,:], self.T[:,:] = self.T, newT

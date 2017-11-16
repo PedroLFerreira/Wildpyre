@@ -17,4 +17,4 @@ sim = Simulator(nx,ny,nt,T=T,A=A,F=F,
                 atmosphericDiffusivity=.56,
                 slopeContribution=1)        # Initialize fields and parameters
 sim.Run()                                   # Perform the simulation
-sim.Show()                                  # Visualize the results
+#sim.Show()                                  # Visualize the results
