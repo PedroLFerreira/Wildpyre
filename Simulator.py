@@ -3,6 +3,7 @@ import time
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 from pylab import *
 class Simulator:
     def __init__ (self, nx, ny, nt, dt=0.1, T=None,
@@ -41,6 +42,10 @@ class Simulator:
         self.initF = self.F.copy()
         self.initH = self.H.copy()
 
+        self.oldF = np.zeros_like(self.F)
+        self.oldT = np.zeros_like(self.T)
+        self.oldH = np.zeros_like(self.H)
+
         self.W = np.zeros(shape=(nx,ny,2))
         self.W[:,:,0] = W[0]
         self.W[:,:,1] = W[1]
@@ -60,28 +65,35 @@ class Simulator:
                                                       - self.atmosphericDiffusivity*self.T[1:-1,1:-1] 
                                                       + self.H[1:-1,1:-1])) # Heavily modified heat equation solved here
         Hot = self.T > self.Tcrit       # Check where T is above Tcrit and store it in the boolean vector Hot
-        newF = self.F              # Copy the last F field state
+        newF[:,:] = self.F              # Copy the last F field state
 
-        newF[Hot] -= self.dt * self.F[Hot] *  self.burningRate * (newT[Hot] - self.Tcrit)/(newT[Hot] + self.Tcrit)     # Burn F if Hot
+        newF[Hot] -= self.dt * self.F[Hot] * self.burningRate * (self.T[Hot] - self.Tcrit)/(self.T[Hot] + self.Tcrit)     # Burn F if Hot
         newF[Hot] = np.maximum(newF[Hot], 0)      # Make sure F is always non-negative
 
-        newH[Hot] = self.dt * self.F[Hot] * self.burningRate * self.heatContent * (newT[Hot] - self.Tcrit)/(newT[Hot] + self.Tcrit) # Increase value in the H field if Hot
+        newH[Hot] = self.dt * self.F[Hot] * self.burningRate * self.heatContent * (self.T[Hot] - self.Tcrit)/(self.T[Hot] + self.Tcrit) # Increase value in the H field if Hot
         newH[np.logical_not(Hot)] = self.H[np.logical_not(Hot)]   # Carry on if not Hot
 
-        self.oldT ,self.T = self.T, newT
-        self.oldF ,self.F = self.F, newF
-        self.oldH ,self.H = self.H, newH
+        self.oldT[:,:], self.T[:,:] = self.T, newT
+        self.oldF[:,:], self.F[:,:] = self.F, newF
+        self.oldH[:,:], self.H[:,:] = self.H, newH
 
     def Run(self, animStep=100):
         if animStep != 0:
             self._BeginAnimation()
+        self.burning = []
+
         begin = time.time()
         for t in range(self.nt-1):
             self._Step()
+
             if animStep != 0 and t%animStep == 0:
                 self._UpdateAnimation(t)
+            
+            self.burning.append(np.sum(self.oldF) - np.sum(self.F))  
+        
         print('Simulation took {} seconds.'.format(time.time() - begin))
-        plt.close(self.fig)
+        if animStep != 0:
+            plt.close(self.fig)
 
     def _BeginAnimation(self):
         self.fig = plt.figure(figsize=(12, 12))
@@ -124,7 +136,7 @@ class Simulator:
         plt.colorbar(AlImg)
         self.fig.show()
     
-    def _UpdateAnimation(self, t):
+    def _UpdateAnimation(self, t=''):
         print(t,end='\r')
         self.TeImg.set_data(self.T.T)
         self.HeImg.set_data(self.H.T)
@@ -136,7 +148,7 @@ class Simulator:
     def Metrics(self):
         metrics = {}
         metrics['burntFuel'] = np.sum(self.initF) - np.sum(self.F)
-        print()
+        metrics['burntStep'] = np.array(self.burning)
 
         return metrics
 
