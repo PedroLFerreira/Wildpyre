@@ -1,2 +1,4 @@
 .vscode/tasks.json
 .vscode/settings.json
+__pycache__
+__pycache__/Simulator.cpython-36.pyc
