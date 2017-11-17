@@ -147,8 +147,9 @@ class Simulator:
 
     def Metrics(self):
         metrics = {}
-        metrics['burntFuel'] = np.sum(self.initF) - np.sum(self.F)
+        metrics['burntFuel'] = (np.sum(self.initF) - np.sum(self.F)) / np.sum(self.initF) 
         metrics['burntStep'] = np.array(self.burning)
+        metrics['dead'] = (self.burning[-1] == 0)
 
         return metrics
 

@@ -9,27 +9,38 @@ A = np.zeros((100,100))
 nx=A.shape[0];ny=A.shape[0];nt=200;                         # Fundamental simulation parameters
 T = np.zeros((nx,ny))                                    # Initialize T field
 T[int(nx/2):int(nx/2+2),int(ny/2):int(ny/2+3)] = 1000      # Increase temperature in the middle of the grid
-F = np.random.normal(loc=500, scale=120, size=(nx,ny))
+F = np.random.normal(loc=500, scale=0, size=(nx,ny))
 
-burning = np.zeros(nt-1)
-dead = []
+heatContentX = np.linspace(15,55,21)#[20 + i for i in range(10)]
+TcritX = np.linspace(100,500,21) #[150 + 10*i for i in range(10)]
 
-for _ in range(10):
-    F = np.random.normal(loc=500, scale=120, size=(nx,ny))
-    sim = Simulator(nx,ny,nt,T=T.copy(),A=A.copy(),F=F.copy(),H=np.zeros((nx,ny)),
-                    Tcrit=200,
-                    burningRate=5,
-                    heatContent=25,
-                    planarDiffusivity=1.2,
-                    atmosphericDiffusivity=.56,
-                    slopeContribution=1)        # Initialize fields and parameters
-    sim.Run(animStep=0)                                   # Perform the simulation
-    print(sim.Metrics()['burntFuel'])
-    burning += sim.Metrics()['burntStep']
-    print(sim.Metrics()['burntStep'][-10:])
-    dead.append((sim.Metrics()['burntStep'] == 0.).any())
+results = np.zeros((len(TcritX), len(heatContentX)))
 
-print(dead)
-plt.plot(burning)
+for i in range(len(TcritX)):
+    for j in range(len(heatContentX)):
+        for k in range(1):
+            F = np.random.normal(loc=500, scale=0, size=(nx,ny))
+            sim = Simulator(nx,ny,nt,T=T.copy(),A=A.copy(),F=F.copy(),H=np.zeros((nx,ny)),
+                            Tcrit=TcritX[i],
+                            burningRate=5,
+                            heatContent=heatContentX[j],
+                            planarDiffusivity=1.2,
+                            atmosphericDiffusivity=.56,
+                            slopeContribution=1)        # Initialize fields and parameters
+            sim.Run(animStep=0)                                   # Perform the simulation
+            results[i,j] += sim.Metrics()['burntFuel']
+            print(sim.Metrics()['burntFuel'])
+            #print(sim.Metrics()['burntStep'][-10:])
+
+img = plt.imshow(results/1, cmap='copper_r', origin='lower', interpolation='bicubic')
+
+plt.colorbar(img)
+#plt.clim(0, 500)
+skip = 3
+plt.xticks(range(0,len(TcritX), skip)      , TcritX[::skip]      )
+plt.yticks(range(0,len(heatContentX), skip), heatContentX[::skip])
+plt.xlabel('Critical Temperature')
+plt.ylabel('Heat Content')
+
 plt.show()
 #sim.Show()                                  # Visualize the results
