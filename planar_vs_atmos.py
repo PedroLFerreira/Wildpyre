@@ -57,5 +57,7 @@ plt.ylabel(r'$\alpha_{atm}$')
 plt.xlabel(r'$\alpha$')
 plt.title('Fraction of area burnt in {} steps'.format(nt))
 
+plt.savefig('plots/planar_vs_atmos.png')
+
 plt.show()
 #sim.Show()                                  # Visualize the results

@@ -33,8 +33,8 @@ for i in range(len(heatX)):
             sim.Run(animStep=0)                                   # Perform the simulation
             results[i,j] += sim.Metrics()['burntFuel']
             dead[i,j] = sim.Metrics()['dead']
-            print(sim.Metrics()['burntFuel'])
-            print(sim.Metrics()['dead'])
+            #print(sim.Metrics()['burntFuel'])
+            #print(sim.Metrics()['dead'])
             #print(sim.Metrics()['burntStep'][-10:])
             print((i*len(burnX) + j + 1)/(len(burnX) * len(heatX))*100, '%', end='\r')
 
@@ -56,6 +56,8 @@ plt.xticks(range(0,len(burnX), skip), burnX[::skip])
 plt.ylabel('$\lambda_{HC}$')
 plt.xlabel('$\lambda_{BR}$')
 plt.title('Fraction of area burnt in {} steps'.format(nt))
+
+plt.savefig('plots/BR_vs_HC.png')
 
 plt.show()
 #sim.Show()                                  # Visualize the results

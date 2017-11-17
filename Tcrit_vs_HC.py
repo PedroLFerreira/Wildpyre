@@ -33,8 +33,8 @@ for i in range(len(TcritX)):
             sim.Run(animStep=0)                                   # Perform the simulation
             results[i,j] += sim.Metrics()['burntFuel']
             dead[i,j] = sim.Metrics()['dead']
-            print(sim.Metrics()['burntFuel'])
-            print(sim.Metrics()['dead'])
+            #print(sim.Metrics()['burntFuel'])
+            #print(sim.Metrics()['dead'])
             #print(sim.Metrics()['burntStep'][-10:])
             print((i*len(heatContentX) + j + 1)/(len(heatContentX) * len(TcritX))*100, '%', end='\r')
 
@@ -56,6 +56,8 @@ plt.xticks(range(0,len(heatContentX), skip), heatContentX[::skip])
 plt.ylabel('$T_{crit}$')
 plt.xlabel('$\lambda_{HC}$')
 plt.title('Fraction of area burnt in {} steps'.format(nt))
+
+plt.savefig('plots/Tcrit_vs_HC.png')
 
 plt.show()
 #sim.Show()                                  # Visualize the results
