@@ -2,6 +2,7 @@ from Simulator import Simulator
 import numpy as np
 from scipy import misc 
 import matplotlib.pyplot as plt
+#from pylab import *
 
 A = misc.imread('Terrain.png')[200:400,200:400].T
 A = A/np.max(A)
@@ -11,8 +12,8 @@ T = np.zeros((nx,ny))                                    # Initialize T field
 T[int(nx/2):int(nx/2+2),int(ny/2):int(ny/2+3)] = 1000      # Increase temperature in the middle of the grid
 F = np.random.normal(loc=500, scale=0, size=(nx,ny))
 
-heatContentX = np.linspace(15,55,21)#[20 + i for i in range(10)]
-TcritX = np.linspace(100,500,21) #[150 + 10*i for i in range(10)]
+heatContentX = np.linspace(0,150,21)#[20 + i for i in range(10)]
+TcritX = np.linspace(1000,0,21) #[150 + 10*i for i in range(10)]
 
 results = np.zeros((len(TcritX), len(heatContentX)))
 
@@ -32,15 +33,18 @@ for i in range(len(TcritX)):
             print(sim.Metrics()['burntFuel'])
             #print(sim.Metrics()['burntStep'][-10:])
 
-img = plt.imshow(results/1, cmap='copper_r', origin='lower', interpolation='bicubic')
+cmap = plt.cm.get_cmap('YlGn_r', 11)
+
+img = plt.imshow(results/1, cmap=cmap, origin='lower', interpolation='bicubic')
 
 plt.colorbar(img)
-#plt.clim(0, 500)
+plt.clim(0, 1)
 skip = 3
-plt.xticks(range(0,len(TcritX), skip)      , TcritX[::skip]      )
-plt.yticks(range(0,len(heatContentX), skip), heatContentX[::skip])
-plt.xlabel('Critical Temperature')
-plt.ylabel('Heat Content')
+plt.yticks(range(0,len(TcritX), skip)      , TcritX[::skip])
+plt.xticks(range(0,len(heatContentX), skip), heatContentX[::skip])
+plt.ylabel('Critical Temperature')
+plt.xlabel('Heat Content')
+plt.title('Pencentage of area burnt in 200 steps')
 
 plt.show()
 #sim.Show()                                  # Visualize the results
