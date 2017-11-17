@@ -106,7 +106,7 @@ class Simulator:
         self.TeImg = plt.imshow(self.T.T, cmap='viridis', origin='lower')
         plt.colorbar(self.TeImg)
         ax1.set_autoscale_on(True)
-        plt.clim(0, 500)
+        plt.clim(0, 1000)
 
         ax2 = self.fig.add_subplot(222)
         plt.xlabel('x')
@@ -116,7 +116,7 @@ class Simulator:
         plt.ylabel('x')
         self.HeImg = plt.imshow(self.H.T, cmap='inferno', origin='lower')
         plt.colorbar(self.HeImg)
-        plt.clim(0, 500)
+        plt.clim(0, 10)
         self.fig.show()
 
         ax2 = self.fig.add_subplot(223)
