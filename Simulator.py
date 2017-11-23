@@ -67,10 +67,12 @@ class Simulator:
         Hot = self.T > self.Tcrit       # Check where T is above Tcrit and store it in the boolean vector Hot
         newF[:,:] = self.F              # Copy the last F field state
 
-        newF[Hot] -= self.dt * self.F[Hot] * self.burningRate * (self.T[Hot] - self.Tcrit) / self.T[Hot]     # Burn F if Hot
+        deltaF = self.dt * self.F[Hot] * self.burningRate * (self.T[Hot] - self.Tcrit) / self.T[Hot]
+
+        newF[Hot] -= deltaF     # Burn F if Hot
         newF[Hot] = np.maximum(newF[Hot], 0)      # Make sure F is always non-negative
 
-        newH[Hot] = self.dt * self.F[Hot] * self.burningRate * self.heatContent * (self.T[Hot] - self.Tcrit) / self.T[Hot] # Increase value in the H field if Hot
+        newH[Hot] = deltaF * self.heatContent # Increase value in the H field if Hot
         newH[np.logical_not(Hot)] = self.H[np.logical_not(Hot)]   # Carry on if not Hot
 
         self.oldT[:,:], self.T[:,:] = self.T, newT
@@ -89,15 +91,19 @@ class Simulator:
             if animStep != 0 and t%animStep == 0:
                 self._UpdateAnimation(t)
             
-            self.burning.append(np.sum(self.oldF) - np.sum(self.F))  
+            self.burning.append(np.sum(self.oldF) - np.sum(self.F))
+
+            if self.burning[-1] == 0 and t != 0:
+                break
         
+        self.tFinal = t
         print('Simulation took {} seconds.'.format(time.time() - begin))
         if animStep != 0:
             plt.close(self.fig)
 
     def _BeginAnimation(self):
         self.fig = plt.figure(figsize=(12, 12))
-        get_current_fig_manager().window.wm_geometry("+0+0")
+        #get_current_fig_manager().window.wm_geometry("+0+0")
 
         ax1 = self.fig.add_subplot(221)
         ax1.set_title('Temperature')
@@ -106,7 +112,7 @@ class Simulator:
         self.TeImg = plt.imshow(self.T.T, cmap='viridis', origin='lower')
         plt.colorbar(self.TeImg)
         ax1.set_autoscale_on(True)
-        plt.clim(0, 1000)
+        plt.clim(0, self.Tcrit)
 
         ax2 = self.fig.add_subplot(222)
         plt.xlabel('x')
@@ -116,7 +122,7 @@ class Simulator:
         plt.ylabel('x')
         self.HeImg = plt.imshow(self.H.T, cmap='inferno', origin='lower')
         plt.colorbar(self.HeImg)
-        plt.clim(0, 10)
+        plt.clim(0, 10*self.dt)
         self.fig.show()
 
         ax2 = self.fig.add_subplot(223)
@@ -147,9 +153,10 @@ class Simulator:
 
     def Metrics(self):
         metrics = {}
-        metrics['burntFuel'] = (np.sum(self.initF) - np.sum(self.F)) / np.sum(self.initF) 
+        metrics['totalBurnt'] = (np.sum(self.initF) - np.sum(self.F)) / np.sum(self.initF) 
         metrics['burntStep'] = np.array(self.burning)
-        metrics['dead'] = (self.burning[-1] == 0)
+        metrics['burning'] = (self.burning[-1] != 0)
+        metrics['elapsedTime'] = self.tFinal
 
         return metrics
 
