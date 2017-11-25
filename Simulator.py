@@ -7,6 +7,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.animation import FuncAnimation
 from pylab import *
 import copy
+from datetime import timedelta
 
 class Simulator:
     def __init__ (self, nx, ny, nt, dt=0.1, T=None,
@@ -135,8 +136,6 @@ class Simulator:
         ax1.set_autoscale_on(True)
         plt.clim(Tclim)
 
-
-
         ax2 = self.fig.add_subplot(132)
         ax2.set_title('Fuel')
         plt.xlabel('x')
@@ -151,8 +150,8 @@ class Simulator:
         plt.clim(Fclim)
         self.fig.show()
 
-        ax4 = self.fig.add_subplot(133)
-        ax4.set_title('Heat')
+        ax3 = self.fig.add_subplot(133)
+        ax3.set_title('Heat')
         plt.xlabel('x')
         plt.ylabel('y')
         plt.imshow(self.A.T, cmap='Greys_r', origin='lower')
@@ -181,6 +180,83 @@ class Simulator:
         metrics['elapsedTime'] = self.tFinal
 
         return metrics
+
+    def CreateGIF(self, skip=20, maxIterations = 100,Tclim=None,
+                                                     Hclim=None,
+                                                     Fclim=None,
+                                                     TOnly=False):
+        if Tclim==None:
+            Tclim = (0, self.Tcrit)
+        if Hclim==None:
+            Hclim = (0, 10*self.dt)
+        if Fclim==None:
+            Fclim=(0, 1000)
+        fig = plt.figure()
+        
+        if TOnly:
+            ax1 = fig.add_subplot(111)
+        else:
+            ax1 = fig.add_subplot(221)
+        ax1.set_title('Temperature')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.imshow(self.A, cmap='Greys_r', origin='lower')
+        cmap = cm.get_cmap('viridis')
+        Tcmap = cmap(np.arange(cmap.N))
+        Tcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+        Tcmap = ListedColormap(Tcmap)
+        self.TeImg = plt.imshow(self.T.T, cmap=Tcmap, origin='lower', interpolation='nearest')
+        plt.colorbar(self.TeImg)
+        ax1.set_autoscale_on(True)
+        plt.clim(Tclim)
+
+        if not TOnly:
+            ax2 = fig.add_subplot(222)
+            ax2.set_title('Fuel')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')
+            cmap = cm.get_cmap('copper')
+            Fcmap = cmap(np.arange(cmap.N))
+            Fcmap[:,-1] = np.linspace(0,1,cmap.N)
+            Fcmap = ListedColormap(Fcmap)
+            self.FuImg = plt.imshow(self.F.T, cmap=Fcmap, origin='lower')
+            plt.colorbar(self.FuImg)
+            plt.clim(Fclim)
+
+            ax3 = fig.add_subplot(223)
+            ax3.set_title('Heat')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')
+            cmap = cm.get_cmap('inferno')
+            Hcmap = cmap(np.arange(cmap.N))
+            Hcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+            Hcmap = ListedColormap(Hcmap)
+            self.HImg = plt.imshow(self.H.T,cmap=Hcmap,origin='lower')
+            plt.colorbar(self.HImg)
+            plt.clim(Hclim)
+
+        
+        estimatedTime = 0
+        initialTime = time.time()
+        def update(i):
+            estimatedTime = (time.time()-initialTime)*(maxIterations/(i+1e-5)-1)
+            for t in range(skip):
+                self._Step()
+            self.TeImg.set_data(self.T.T)
+            if not TOnly:
+                self.FuImg.set_data(self.F.T)
+                self.HImg.set_data(self.H.T)
+            print(' ETA: {}                     '.format(timedelta(seconds=estimatedTime)), end='\r')
+            if TOnly:
+                return self.TeImg,
+            return (self.TeImg, self.FuImg, self.HImg)
+
+        anim = FuncAnimation(fig, update, frames=np.arange(0,maxIterations), interval=40, blit=True)
+        anim.save('inferno.mp4', dpi=200, writer='ffmpeg')
+        #plt.show()
+
 
     # def Run(self):
     #     begin = time.time()
