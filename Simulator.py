@@ -157,6 +157,14 @@ class Simulator:
         metrics['burntStep'] = np.array(self.burning)
         metrics['burning'] = (self.burning[-1] != 0)
         metrics['elapsedTime'] = self.tFinal
+        
+        if metrics['burning']:
+            fitSize = len(metrics['burntStep'])
+            fitRange = fitSize // 2
+            m, b = np.polyfit(np.arange(fitSize-fitRange, fitSize), metrics['burntStep'][-fitRange:], deg=1)
+            metrics['burnRate'] = (m, b)
+        else:
+            metrics['burnRate'] = None
 
         return metrics
 
