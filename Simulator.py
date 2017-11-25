@@ -3,8 +3,11 @@ import time
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 from matplotlib.animation import FuncAnimation
 from pylab import *
+import copy
+
 class Simulator:
     def __init__ (self, nx, ny, nt, dt=0.1, T=None,
                                             F=None,
@@ -73,15 +76,19 @@ class Simulator:
         newF[Hot] = np.maximum(newF[Hot], 0)      # Make sure F is always non-negative
 
         newH[Hot] = deltaF * self.heatContent # Increase value in the H field if Hot
-        newH[np.logical_not(Hot)] = self.H[np.logical_not(Hot)]   # Carry on if not Hot
+        newH[np.logical_not(Hot)] = 0   # Carry on if not Hot
 
         self.oldT[:,:], self.T[:,:] = self.T, newT
         self.oldF[:,:], self.F[:,:] = self.F, newF
         self.oldH[:,:], self.H[:,:] = self.H, newH
 
-    def Run(self, animStep=100):
+    def Run(self, animStep=100,Tclim=None,
+                               Hclim=None,
+                               Fclim=None):
         if animStep != 0:
-            self._BeginAnimation()
+            self._BeginAnimation(Tclim=Tclim,
+                                 Hclim=Hclim,
+                                 Fclim=Fclim)
         self.burning = []
 
         begin = time.time()
@@ -101,53 +108,68 @@ class Simulator:
         if animStep != 0:
             plt.close(self.fig)
 
-    def _BeginAnimation(self):
-        self.fig = plt.figure(figsize=(12, 12))
-        #get_current_fig_manager().window.wm_geometry("+0+0")
+    def _BeginAnimation(self, Tclim=None,
+                              Hclim=None,
+                              Fclim=None):
+        if Tclim==None:
+            Tclim = (0, self.Tcrit)
+        if Hclim==None:
+            Hclim = (0, 10*self.dt)
+        if Fclim==None:
+            Fclim=(0, 1000)
 
-        ax1 = self.fig.add_subplot(221)
+        self.fig = plt.figure(figsize=(15, 4))
+        get_current_fig_manager().window.wm_geometry("+0+0")
+
+        ax1 = self.fig.add_subplot(131)
         ax1.set_title('Temperature')
         plt.xlabel('x')
         plt.ylabel('y')
-        self.TeImg = plt.imshow(self.T.T, cmap='viridis', origin='lower')
+        plt.imshow(self.A.T, cmap='Greys_r', origin='lower')
+        cmap = cm.get_cmap('viridis')
+        Tcmap = cmap(np.arange(cmap.N))
+        Tcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+        Tcmap = ListedColormap(Tcmap)
+        self.TeImg = plt.imshow(self.T.T, cmap=Tcmap, origin='lower')
         plt.colorbar(self.TeImg)
         ax1.set_autoscale_on(True)
-        plt.clim(0, self.Tcrit)
+        plt.clim(Tclim)
 
-        ax2 = self.fig.add_subplot(222)
-        plt.xlabel('x')
-        plt.ylabel('y')
-        ax2.set_title('Heat')
-        plt.xlabel('y')
-        plt.ylabel('x')
-        self.HeImg = plt.imshow(self.H.T, cmap='inferno', origin='lower')
-        plt.colorbar(self.HeImg)
-        plt.clim(0, 10*self.dt)
-        self.fig.show()
 
-        ax2 = self.fig.add_subplot(223)
+
+        ax2 = self.fig.add_subplot(132)
         ax2.set_title('Fuel')
-        plt.xlabel('y')
-        plt.ylabel('x')
-        self.FuImg = plt.imshow(self.F.T, cmap='copper', origin='lower')
-        plt.colorbar(self.FuImg)
-        plt.clim(0, 1000)
-        self.fig.show()
-
-        ax4 = self.fig.add_subplot(224)
         plt.xlabel('x')
         plt.ylabel('y')
-        ax4.set_title('Altitude')
-        AlImg = plt.imshow(self.A.T, cmap='viridis', origin='lower')
-        plt.colorbar(AlImg)
+        plt.imshow(self.A.T, cmap='Greys_r', origin='lower')
+        cmap = cm.get_cmap('copper')
+        Fcmap = cmap(np.arange(cmap.N))
+        Fcmap[:,-1] = np.linspace(0,1,cmap.N)
+        Fcmap = ListedColormap(Fcmap)
+        self.FuImg = plt.imshow(self.F.T, cmap=Fcmap, origin='lower')
+        plt.colorbar(self.FuImg)
+        plt.clim(Fclim)
         self.fig.show()
-    
+
+        ax4 = self.fig.add_subplot(133)
+        ax4.set_title('Heat')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.imshow(self.A.T, cmap='Greys_r', origin='lower')
+        cmap = cm.get_cmap('inferno')
+        Hcmap = cmap(np.arange(cmap.N))
+        Hcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+        Hcmap = ListedColormap(Hcmap)
+        self.HImg = plt.imshow(self.H.T,cmap=Hcmap,origin='lower')
+        plt.colorbar(self.HImg)
+        plt.clim(Hclim)
+        self.fig.show()
+
     def _UpdateAnimation(self, t=''):
         print(t,end='\r')
         self.TeImg.set_data(self.T.T)
-        self.HeImg.set_data(self.H.T)
         self.FuImg.set_data(self.F.T)
-        self.fig.tight_layout
+        self.HImg.set_data(self.H.T)
         self.fig.canvas.draw()
         plt.pause(1e-20)
 
