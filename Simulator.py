@@ -83,7 +83,8 @@ class Simulator:
         self.oldF[:,:], self.F[:,:] = self.F, newF
         self.oldH[:,:], self.H[:,:] = self.H, newH
 
-    def Run(self, animStep=100,Tclim=None,
+    def Run(self, animStep=100,verbose=1,
+                               Tclim=None,
                                Hclim=None,
                                Fclim=None):
         if animStep != 0:
@@ -105,7 +106,8 @@ class Simulator:
                 break
         
         self.tFinal = t
-        print('Simulation took {} seconds.'.format(time.time() - begin))
+        if verbose:
+            print('Simulation took {} seconds.'.format(time.time() - begin))
         if animStep != 0:
             plt.close(self.fig)
 
@@ -113,9 +115,9 @@ class Simulator:
                               Hclim=None,
                               Fclim=None):
         if Tclim==None:
-            Tclim = (0, self.Tcrit)
+            Tclim = (0, self.Tcrit*2)
         if Hclim==None:
-            Hclim = (0, 10*self.dt)
+            Hclim = (0, 200*self.burningRate*self.heatContent*self.dt)
         if Fclim==None:
             Fclim=(0, 1000)
 
@@ -189,37 +191,71 @@ class Simulator:
 
         return metrics
 
-    def CreateGIF(self, skip=20, maxIterations = 100,Tclim=None,
-                                                     Hclim=None,
-                                                     Fclim=None,
-                                                     TOnly=False):
+    def CreateGIF(self, skip=20, maxIterations=100,Tclim=None,
+                                                   Hclim=None,
+                                                   Fclim=None,
+                                                   TOnly=False,
+                                                   FOnly=False,
+                                                   TandF=False,
+                                                   name='changethis.mp4'):
         if Tclim==None:
-            Tclim = (0, self.Tcrit)
+            Tclim = (0, self.Tcrit*2)
         if Hclim==None:
-            Hclim = (0, 10*self.dt)
+            Hclim = (0, 200*self.burningRate*self.heatContent*self.dt)
         if Fclim==None:
             Fclim=(0, 1000)
         fig = plt.figure()
         
         if TOnly:
             ax1 = fig.add_subplot(111)
-        else:
-            ax1 = fig.add_subplot(221)
-        ax1.set_title('Temperature')
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.imshow(self.A, cmap='Greys_r', origin='lower')
-        cmap = cm.get_cmap('viridis')
-        Tcmap = cmap(np.arange(cmap.N))
-        Tcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
-        Tcmap = ListedColormap(Tcmap)
-        self.TeImg = plt.imshow(self.T.T, cmap=Tcmap, origin='lower', interpolation='nearest')
-        plt.colorbar(self.TeImg)
-        ax1.set_autoscale_on(True)
-        plt.clim(Tclim)
+            ax1.set_title('Temperature')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')  
+            cmap = cm.get_cmap('viridis')
+            Tcmap = cmap(np.arange(cmap.N))
+            Tcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+            Tcmap = ListedColormap(Tcmap)
+            self.TeImg = plt.imshow(self.T.T, cmap=Tcmap, origin='lower', interpolation='nearest')
+            cbT = plt.colorbar(self.TeImg)
+            ax1.set_autoscale_on(True)
+            plt.clim(Tclim)
+            cbT.patch.set_facecolor((0, 0, 0, 1.0))
+        elif FOnly:
+            ax1 = fig.add_subplot(111)
+            ax1.set_title('Fuel')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')
+            cmap = cm.get_cmap('copper')
+            Fcmap = cmap(np.arange(cmap.N))
+            Fcmap[:,-1] = np.linspace(0,1,cmap.N)
+            Fcmap = ListedColormap(Fcmap)
+            self.FuImg = plt.imshow(self.F.T, cmap=Fcmap, origin='lower')
+            cbF = plt.colorbar(self.FuImg)
+            plt.clim(Fclim)
+            cbF.patch.set_facecolor((0, 0, 0, 1.0))
+        elif TandF:
+            fig = plt.figure(figsize=(5,8))
+            #fig, (ax1, ax2) = plt.subplots(2, 1, squeeze=True)
+            ax1 = fig.add_subplot(211)
+            #plt.sca(ax1)
+            ax1.set_title('Temperature')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')  
+            cmap = cm.get_cmap('viridis')
+            Tcmap = cmap(np.arange(cmap.N))
+            Tcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+            Tcmap = ListedColormap(Tcmap)
+            self.TeImg = plt.imshow(self.T.T, cmap=Tcmap, origin='lower', interpolation='nearest')
+            cbT = plt.colorbar(self.TeImg)
+            ax1.set_autoscale_on(True)
+            plt.clim(Tclim)
+            cbT.patch.set_facecolor((0, 0, 0, 1.0))
 
-        if not TOnly:
-            ax2 = fig.add_subplot(222)
+            ax2 = fig.add_subplot(212)
+            #plt.sca(ax2)
             ax2.set_title('Fuel')
             plt.xlabel('x')
             plt.ylabel('y')
@@ -229,10 +265,41 @@ class Simulator:
             Fcmap[:,-1] = np.linspace(0,1,cmap.N)
             Fcmap = ListedColormap(Fcmap)
             self.FuImg = plt.imshow(self.F.T, cmap=Fcmap, origin='lower')
-            plt.colorbar(self.FuImg)
+            cbF = plt.colorbar(self.FuImg)
             plt.clim(Fclim)
+            cbF.patch.set_facecolor((0, 0, 0, 1.0))
+        else:
+            fig = plt.figure(figsize=(3,7))
+            ax1 = fig.add_subplot(311)
+            ax1.set_title('Temperature')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')  
+            cmap = cm.get_cmap('viridis')
+            Tcmap = cmap(np.arange(cmap.N))
+            Tcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
+            Tcmap = ListedColormap(Tcmap)
+            self.TeImg = plt.imshow(self.T.T, cmap=Tcmap, origin='lower', interpolation='nearest')
+            cbT = plt.colorbar(self.TeImg)
+            ax1.set_autoscale_on(True)
+            plt.clim(Tclim)
+            cbT = cbT.patch.set_facecolor((0, 0, 0, 1.0))
 
-            ax3 = fig.add_subplot(223)
+            ax2 = fig.add_subplot(312)
+            ax2.set_title('Fuel')
+            plt.xlabel('x')
+            plt.ylabel('y')
+            plt.imshow(self.A, cmap='Greys_r', origin='lower')
+            cmap = cm.get_cmap('copper')
+            Fcmap = cmap(np.arange(cmap.N))
+            Fcmap[:,-1] = np.linspace(0,1,cmap.N)
+            Fcmap = ListedColormap(Fcmap)
+            self.FuImg = plt.imshow(self.F.T, cmap=Fcmap, origin='lower')
+            cbF = plt.colorbar(self.FuImg)
+            plt.clim(Fclim)
+            cbF.patch.set_facecolor((0, 0, 0, 1.0))
+
+            ax3 = fig.add_subplot(313)
             ax3.set_title('Heat')
             plt.xlabel('x')
             plt.ylabel('y')
@@ -242,9 +309,11 @@ class Simulator:
             Hcmap[:,-1] = np.append(np.linspace(0,1,cmap.N//4),np.ones(cmap.N-cmap.N//4))
             Hcmap = ListedColormap(Hcmap)
             self.HImg = plt.imshow(self.H.T,cmap=Hcmap,origin='lower')
-            plt.colorbar(self.HImg)
+            cbH = plt.colorbar(self.HImg)
             plt.clim(Hclim)
+            cbH.patch.set_facecolor((0, 0, 0, 1.0))
 
+        plt.tight_layout()
         
         estimatedTime = 0
         initialTime = time.time()
@@ -252,17 +321,26 @@ class Simulator:
             estimatedTime = (time.time()-initialTime)*(maxIterations/(i+1e-5)-1)
             for t in range(skip):
                 self._Step()
-            self.TeImg.set_data(self.T.T)
+            
+            if not FOnly:
+                self.TeImg.set_data(self.T.T)
             if not TOnly:
                 self.FuImg.set_data(self.F.T)
+            if not FOnly and not TOnly and not TandF:
                 self.HImg.set_data(self.H.T)
             print(' ETA: {}                     '.format(timedelta(seconds=estimatedTime)), end='\r')
+            if i == maxIterations-1:
+                plt.savefig(name.split('.')[0]+'_fig.pdf')
             if TOnly:
                 return self.TeImg,
+            if FOnly:
+                return self.FuImg,
+            if TandF:
+                return (self.TeImg, self.FuImg)
             return (self.TeImg, self.FuImg, self.HImg)
 
         anim = FuncAnimation(fig, update, frames=np.arange(0,maxIterations), interval=40, blit=True)
-        anim.save('inferno.mp4', dpi=200, writer='ffmpeg')
+        anim.save(name, dpi=200, writer='ffmpeg')
         #plt.show()
 
 
