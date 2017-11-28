@@ -15,12 +15,10 @@ F = np.maximum(F, 0)
 
 sim = Simulator(nx,ny,nt,T=T.copy(),A=A.copy(),F=F.copy(),dt=0.01,
                 Tcrit=100,
-                burningRate=0.02,
-                heatContent=125,
+                burningRate=0.025,
+                heatContent=175,
                 planarDiffusivity=0.005,
                 atmosphericDiffusivity=0.004,
                 slopeContribution=1)        # Initialize fields and parameters
 #sim.Run(animStep=100)                                   # Perform the simulation
 sim.CreateGIF(skip=100, maxIterations=1000, name='fuel500.mp4', TandF=True)
-
-#print(sim.Metrics()['elapsedTime'])
