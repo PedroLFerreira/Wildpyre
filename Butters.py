@@ -29,4 +29,6 @@ sim = Simulator(nx,ny,nt,T=T,A=A,F=F,dt=.01,
 sim.CreateGIF(skip=400, maxIterations = 1500,
                         Tclim=(0,500),
                         Hclim=(0,7),
-                        TOnly=True) # Creates video file
+                        TOnly=True,
+                        name='butters.mp4',
+                        checkpoints=4) # Creates video file
